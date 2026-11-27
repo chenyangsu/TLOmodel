@@ -3801,7 +3801,7 @@ class HSI_RTI_Medical_Intervention(HSI_Event, IndividualScopeEventMixin):
             sd_icu_days = p['sd_icu_days']
             mean_tbi_icu_days = p['mean_tbi_icu_days']
             sd_tbi_icu_days = p['sd_tbi_icu_days']
-            codes = ['133', '133a', '133b', '133c', '133d' '134', '134a', '134b', '135']
+            codes = ['133', '133a', '133b', '133c', '133d', '134', '134a', '134b', '135']
             _, counts = road_traffic_injuries.rti_find_and_count_injuries(person_injuries, codes)
             if counts > 0:
                 self.icu_days = int(self.module.rng.normal(mean_tbi_icu_days, sd_tbi_icu_days))

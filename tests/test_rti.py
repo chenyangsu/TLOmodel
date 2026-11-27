@@ -436,3 +436,30 @@ def test_health_system_disabled(seed):
     sim.simulate(end_date=end_date)
     # check the datatypes
     check_dtypes(sim)
+
+
+def test_tbi_133d_uses_tbi_icu_days(seed):
+    """Injury code '133d' should be recognized as TBI when determining ICU stay duration."""
+    sim = create_basic_rti_sim(10, seed)
+    sim.simulate(end_date=start_date)
+
+    rti_mod = sim.modules['RTI']
+    p = rti_mod.parameters
+    p['mean_icu_days'] = 5.0
+    p['sd_icu_days'] = 0.0
+    p['mean_tbi_icu_days'] = 12.0
+    p['sd_tbi_icu_days'] = 0.0
+
+    df = sim.population.props
+    person_id = df.index[df.is_alive][0]
+    df.at[person_id, 'rt_road_traffic_inc'] = True
+    df.at[person_id, 'rt_diagnosed'] = True
+    df.at[person_id, 'rt_date_inj'] = sim.date
+    df.at[person_id, 'rt_injury_1'] = '133d'
+    df.at[person_id, 'rt_ISS_score'] = int(p['hdu_cut_off_iss_score']) + 1
+
+    event = rti.HSI_RTI_Medical_Intervention(module=rti_mod, person_id=person_id)
+    event.apply(person_id=person_id, squeeze_factor=0.0)
+
+    assert event.icu_days == 12
+    assert event.BEDDAYS_FOOTPRINT['general_bed'] == 12
